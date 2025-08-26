@@ -1,0 +1,85 @@
+version: 2
+updates:
+  # Enable updates for GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][actions]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"
+
+  # Enable updates for npm (Node.js, JavaScript)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][npm]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"
+
+  # Enable updates for pip (Python)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][pip]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"
+
+  # Enable updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][docker]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"
+
+  # Enable updates for Maven (Java)
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][maven]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"
+
+  # Enable updates for Composer (PHP)
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "[dependabot][composer]"
+    labels:
+      - "dependencies"
+      - "auto"
+    reviewers:
+      - "AuraFrameFxDev"

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Define a custom permission for the IntegrityViolationReceiver -->
+    <permission
+        android:name="dev.aurakai.auraframefx.permission.RECEIVE_INTEGRITY_VIOLATION"
+        android:protectionLevel="signature"
+        android:label="@string/permission_receive_integrity_violation_label"
+        android:description="@string/permission_receive_integrity_violation_description" />
+
+    <application
+        android:name="dev.aurakai.auraframefx.AuraFrameApplication"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="AuraFrameFX LSPosed Module"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AuraFrameFX">
+        <!-- Genesis-OS Xposed/LSPosed Module Configuration -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="@string/xposed_description" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="82" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposed_scope" />
+
+        <!-- Yuki Hook API Configuration -->
+        <meta-data
+            android:name="yukihookapi_module"
+            android:value="true" />
+        <meta-data
+            android:name="yukihookapi_module_name"
+            android:value="Genesis-OS AI Framework" />
+        <meta-data
+            android:name="yukihookapi_module_version"
+            android:value="1.0.0" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".VertexSyncService"
+            android:exported="false" />
+        <service
+            android:name=".security.IntegrityMonitorService"
+            android:exported="false" />
+
+        <receiver
+            android:name=".receivers.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".security.IntegrityViolationReceiver"
+            android:exported="true"
+            android:permission="dev.aurakai.auraframefx.permission.RECEIVE_INTEGRITY_VIOLATION">
+            <intent-filter>
+                <action android:name="dev.aurakai.auraframefx.ACTION_INTEGRITY_VIOLATION" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
