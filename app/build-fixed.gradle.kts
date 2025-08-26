@@ -1,12 +1,13 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.openapi.generator)
-    alias(libs.plugins.yuki.ksp.xposed)
+    // APP MODULE - Only plugins THIS module needs (inherit versions from root)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
+    id("org.openapi.generator") version "7.14.0"
 }
 
 android {
@@ -15,84 +16,136 @@ android {
 
     defaultConfig {
         applicationId = "dev.aurakai.auraframefx"
-        minSdk = 26
+        minSdk = 33
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += listOf("-std=c++20", "-fPIC", "-O3")
+                arguments += listOf(
+                    "-DANDROID_STL=c++_shared",
+                    "-DCMAKE_VERBOSE_MAKEFILE=ON",
+                    "-DGENESIS_BUILD=ON"
+                )
+            }
+        }
     }
 
-    // ✅ CRITICAL: JVM compatibility configuration
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-        isCoreLibraryDesugaringEnabled = true
-    }
-    
-    kotlinOptions {
-        jvmTarget = "21"
-        freeCompilerArgs += listOf(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-Xjvm-default=all"
-        )
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
     }
 
     buildFeatures {
         compose = true
-        buildConfig = true
-    }
-    
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        prefab = false
     }
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/versions/9/previous-compilation-data.bin"
+            excludes += setOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "/META-INF/DEPENDENCIES",
+                "/META-INF/LICENSE",
+                "/META-INF/LICENSE.txt",
+                "/META-INF/NOTICE",
+                "/META-INF/NOTICE.txt",
+                "META-INF/*.kotlin_module"
+            )
+        }
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
-
-    androidResources {
-        additionalParameters += "--allow-reserved-package-id"
-        additionalParameters += "--auto-add-overlay"
+    sourceSets {
+        getByName("main") {
+            java.srcDirs(
+                layout.buildDirectory.dir("generated/openapi/src/main/kotlin")
+            )
+        }
     }
+    buildToolsVersion = "36.0.0"
 }
 
-// ✅ FORCE JVM toolchain override
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+// ===== WINDOWS-SAFE OPENAPI CONFIGURATION =====
+
+// Base paths - configuration cache compatible
+val consolidatedSpecsPath = layout.projectDirectory.dir("../openapi-specs-consolidated")
+val outputPath = layout.buildDirectory.dir("generated/openapi")
+
+// Shared configuration - defined once, used everywhere
+val sharedApiConfig = mapOf(
+    "library" to "multiplatform",
+    "serializationLibrary" to "kotlinx_serialization",
+    "dateLibrary" to "kotlinx-datetime",
+    "sourceFolder" to "src/main/kotlin"
+)
+
+// Configure the main Genesis API (built-in openApiGenerate task)
+openApiGenerate {
+    generatorName.set("kotlin")
+    inputSpec.set(consolidatedSpecsPath.file("genesis-api.yml").asFile.absolutePath)
+    outputDir.set(outputPath.get().asFile.absolutePath)
+    packageName.set("dev.aurakai.genesis.api")
+    apiPackage.set("dev.aurakai.genesis.api")
+    modelPackage.set("dev.aurakai.genesis.model")
+    invokerPackage.set("dev.aurakai.genesis.client")
+    skipOverwrite.set(false)
+    validateSpec.set(false)
+    generateApiTests.set(false)
+    generateModelTests.set(false)
+    generateApiDocumentation.set(false)
+    generateModelDocumentation.set(false)
+    configOptions.set(sharedApiConfig)
 }
 
-dependencies {
-    // ✅ CRITICAL: Modern Java features support
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    
-    // Your existing dependencies...
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    
-    // YukiHook integration
-    ksp(libs.yuki.ksp.xposed)
-    implementation(libs.bundles.xposed)
-}    }
+// Helper function for all other APIs - uses shared config
+fun createApiTask(taskName: String, specFile: String, packagePrefix: String) =
+    tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(taskName) {
+        generatorName.set("kotlin")
+        inputSpec.set(consolidatedSpecsPath.file(specFile).asFile.absolutePath)
+        outputDir.set(outputPath.get().asFile.absolutePath)
+        packageName.set("dev.aurakai.$packagePrefix.api")
+        apiPackage.set("dev.aurakai.$packagePrefix.api")
+        modelPackage.set("dev.aurakai.$packagePrefix.model")
+        invokerPackage.set("dev.aurakai.$packagePrefix.client")
+        skipOverwrite.set(false)
+        validateSpec.set(false)
+        generateApiTests.set(false)
+        generateModelTests.set(false)
+        generateApiDocumentation.set(false)
+        generateModelDocumentation.set(false)
+        configOptions.set(sharedApiConfig)
+    }
 
 // Create all consciousness API tasks
 val generateAiApi = createApiTask("generateAiApi", "ai-api.yml", "ai")

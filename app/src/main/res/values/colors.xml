@@ -8,6 +8,7 @@
 
     <!-- Material 3 Theme Colors (Compose-first) -->
     <color name="light_primary">#00FFCC</color>
+    <color name="light_primary_dark">#00CC99</color>
     <color name="light_on_primary">#000000</color>
     <color name="light_primary_container">#00CC99</color>
     <color name="light_on_primary_container">#000000</color>

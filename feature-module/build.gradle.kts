@@ -10,6 +10,13 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
+// Added to specify Java version for this subproject
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
+    }
+}
+
 // REMOVED: jvmToolchain(24) - Using system Java via JAVA_HOME
 // This eliminates toolchain auto-provisioning errors
 

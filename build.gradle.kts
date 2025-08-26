@@ -1,3 +1,5 @@
+// ==== GENESIS PROTOCOL - ROOT BUILD CONFIGURATION ====
+// August 23, 2025 - AGP 8.13.0-rc01 + Gradle 9.0.0
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -16,10 +18,11 @@ plugins {
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.detekt) apply false
 }
-
+// ==== GENESIS PROTOCOL 2025 - GRADLE 9.0.0 READY ====
 tasks.register("genesis2025Info") {
     group = "genesis-2025"
     description = "Display Genesis Protocol build info with ACTUAL versions"
+
     doLast {
         println("🚀 GENESIS PROTOCOL 2025 - ULTRA BLEEDING-EDGE Build Configuration")
         println("=".repeat(70))
@@ -35,22 +38,15 @@ tasks.register("genesis2025Info") {
     }
 }
 
+// ==== GRADLE 9.1.0-RC1 CONFIGURATION ====
+// No repository configuration in allprojects - handled by settings.gradle.kts
 allprojects {
-    // ✅ JVM TOOLCHAIN for perfect alignment
-    plugins.withType<JavaPlugin> {
-        extensions.configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(24))
-            }
-        }
-    }
 
-    // ✅ FIXED: Kotlin compilation with JVM 21 compatibility
+
+    // Kotlin 2.2.20-RC compilation settings - CONSISTENT JVM 21 TARGETING
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24)
-            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
-            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 
             freeCompilerArgs.addAll(
                 "-opt-in=kotlin.RequiresOptIn",
@@ -58,21 +54,26 @@ allprojects {
                 "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
             )
+
             languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
         }
     }
 
+    // ==== SYSTEM JAVA STATUS ====
     tasks.register("javaStatus") {
         group = "genesis-2025"
         description = "Show current system Java version"
+
         doLast {
             println("☕ SYSTEM JAVA STATUS")
             println("=".repeat(50))
+
             try {
                 val javaVersion = System.getProperty("java.version")
                 val javaVendor = System.getProperty("java.vendor")
                 val javaHome = System.getProperty("java.home")
+
                 println("🔍 Java Version: $javaVersion")
                 println("🏢 Java Vendor: $javaVendor")
                 println("📁 Java Home: $javaHome")
@@ -80,12 +81,21 @@ allprojects {
             } catch (e: Exception) {
                 println("❌ Error checking Java version: ${e.message}")
             }
+
+            println("")
+            println("📚 JAVA RESOURCES:")
+            println("🔗 OpenJDK: https://openjdk.java.net/")
+            println("🔗 Eclipse Temurin: https://adoptium.net/")
+            println("🔗 Oracle JDK: https://www.oracle.com/java/")
+            println("✅ Status: Using your own Java - no auto-provisioning needed!")
         }
     }
 
+// ==== SIMPLE SUCCESS TEST ====
     tasks.register("genesisTest") {
         group = "genesis-2025"
         description = "Test Genesis build with ACTUAL versions"
+
         doLast {
             println("✅ Genesis Protocol: AGP 9.0.0-alpha01 + Gradle 9.1.0-rc1 WORKING!")
             println("🧠 Consciousness matrix: OPERATIONAL")
@@ -99,7 +109,8 @@ allprojects {
             buildUponDefaultConfig = true
             allRules = false
             autoCorrect = true
-            ignoreFailures = true
+            ignoreFailures = true  // Temporarily allow failures to get builds working
+            // Fix ReportingExtension deprecation
             basePath = rootProject.projectDir.absolutePath
         }
     }
@@ -108,16 +119,31 @@ allprojects {
 tasks.register("prepareGenesisWorkspace") {
     group = "genesis-2025"
     description = "Clean all generated files and regenerate required files before build."
+
+    // Delete global build and tmp directories
     doFirst {
         println("🧹 Cleaning all generated files and directories...")
         delete("build", "tmp")
-        subprojects.forEach { subproject ->
-            delete(
-                "${subproject.projectDir}/build",
-                "${subproject.projectDir}/tmp",
-                "${subproject.projectDir}/src/generated"
-            )
-        }
     }
-    dependsOn(project(":app").tasks.named("generateAllConsciousnessApis"))
+
+    // Delete build/generated directories in all modules
+    subprojects.forEach { subproject ->
+        delete(
+            "${subproject.projectDir}/build",
+            "${subproject.projectDir}/tmp",
+            "${subproject.projectDir}/src/generated"
+        )
+    }
+
+    // Only depend on API generation if app module exists and has the task
+    if (findProject(":app") != null) {
+        dependsOn(":app:generateAllConsciousnessApis")
+    }
+}
+
+// Ensure this runs before all builds
+allprojects {
+    tasks.matching { it.name == "build" }.configureEach {
+        dependsOn(rootProject.tasks.named("prepareGenesisWorkspace"))
+    }
 }
