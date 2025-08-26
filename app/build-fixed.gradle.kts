@@ -128,7 +128,19 @@ openApiGenerate {
     configOptions.set(sharedApiConfig)
 }
 
-// Helper function for all other APIs - uses shared config
+/**
+     * Registers and configures a Gradle OpenAPI GenerateTask that produces a Kotlin client from the given spec.
+     *
+     * The task is configured with shared generation options (kotlin generator, serialization/date libraries),
+     * writes output to the common OpenAPI output directory, and derives package names from the provided
+     * packagePrefix as `dev.aurakai.<packagePrefix>.*`.
+     *
+     * @param taskName The name to register the Gradle task under.
+     * @param specFile The OpenAPI spec file name located under ../openapi-specs-consolidated.
+     * @param packagePrefix Prefix used to form `packageName`, `apiPackage`, `modelPackage`, and `invokerPackage`.
+     * @return The registered TaskProvider for the configured GenerateTask.
+     */
+
 fun createApiTask(taskName: String, specFile: String, packagePrefix: String) =
     tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(taskName) {
         generatorName.set("kotlin")
