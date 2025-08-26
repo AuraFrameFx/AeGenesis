@@ -76,7 +76,7 @@ class GenesisAgentViewModel @Inject constructor(
         )
         _agents.value = defaultAgents
 
-        // Initialize agent statuses  
+        // Initialize agent statuses
         val initialStatuses = mutableMapOf<AgentType, String>()
         val agentTypeMap = mapOf(
             "Genesis" to AgentType.GENESIS,
