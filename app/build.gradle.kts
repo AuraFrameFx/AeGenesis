@@ -60,6 +60,23 @@ android {
         }
     }
 
+    // ✅ ADD THIS - MISSING JVM CONFIGURATION
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21  // Match available CI Java
+        targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        jvmTarget = "21"  // Match Java compilation target
+
+        freeCompilerArgs += listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
+    }
+
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt");version = "3.22.1"
@@ -391,7 +408,8 @@ ksp(libs.room.compiler)
 implementation(libs.timber)
 implementation(libs.coil.compose)
 
-coreLibraryDesugaring(libs.coreLibraryDesugaring)
+// ✅ ADD THIS for modern Java features on older Android
+coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
 implementation(platform(libs.firebase.bom))
 implementation(libs.bundles.firebase)

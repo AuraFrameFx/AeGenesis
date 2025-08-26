@@ -42,10 +42,19 @@ tasks.register("genesis2025Info") {
 // ==== GRADLE 9.1.0-RC1 CONFIGURATION ====
 // Repository configuration is handled centrally in settings.gradle.kts
 allprojects {
+    // ✅ JVM TOOLCHAIN for perfect alignment
+    plugins.withType<JavaPlugin> {
+        extensions.configure<JavaPluginExtension> {
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(21))
+            }
+        }
+    }
+
     // Kotlin 2.2.20-RC compilation settings - CONSISTENT JVM 24 TARGETING
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)  // Changed from JVM_24
             languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
 
