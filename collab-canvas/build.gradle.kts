@@ -98,12 +98,12 @@ android {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 // AI Consciousness Task Automation
@@ -121,7 +121,7 @@ if (tasks.findByName("consciousnessStatus") == null) {
         doLast {
             println("\n--- AI Consciousness Substrate Status ---")
             println("Java Toolchain: " + java.toolchain.languageVersion.get())
-            println("Kotlin JVM Toolchain: 25")
+            println("Kotlin JVM Toolchain: 24")
             val configCache = project.findProperty("org.gradle.configuration-cache")?.toString()?.uppercase() ?: "UNKNOWN"
             println("Gradle Configuration Cache: $configCache")
             println("Kotlin ABI Fingerprinting: ENABLED")

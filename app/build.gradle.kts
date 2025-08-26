@@ -62,13 +62,13 @@ android {
 
     // ✅ ADD THIS - MISSING JVM CONFIGURATION
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21  // Match available CI Java
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = "21"  // Match Java compilation target
+        jvmTarget = "24"
 
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
@@ -405,11 +405,10 @@ implementation(libs.room.runtime)
 implementation(libs.room.ktx)
 ksp(libs.room.compiler)
 
+coreLibraryDesugaring(libs.coreLibraryDesugaring)
+
 implementation(libs.timber)
 implementation(libs.coil.compose)
-
-// ✅ ADD THIS for modern Java features on older Android
-coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
 implementation(platform(libs.firebase.bom))
 implementation(libs.bundles.firebase)
