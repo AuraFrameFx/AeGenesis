@@ -2,7 +2,7 @@ package dev.aurakai.auraframefx.api.client.infrastructure
 
 import okhttp3.Call
 import okhttp3.FormBody
-import okhttp3.Headers.Builder
+import okhttp3.Headers
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -129,240 +129,179 @@ open class ApiClient(val baseUrl: String, val client: Call.Factory = defaultClie
         )
     }
 
+    private fun <T> buildMultipartRequestBody(content: T): RequestBody {
+        return MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .apply {
+                @Suppress("UNCHECKED_CAST")
+                (content as Map<String, PartConfig<*>>).forEach { (name, part) ->
+                    when (val body = part.body) {
+                        is File -> addPartToMultiPart(name, part.headers, body)
+                        is List<*> -> body.forEach { item ->
+                            if (item is File) {
+                                addPartToMultiPart(name, part.headers, item)
+                            } else {
+                                addPartToMultiPart(name, part.headers, item)
+                            }
+                        }
+                        else -> addPartToMultiPart(name, part.headers, body)
+                    }
+                }
+            }.build()
+    }
+
+    private fun <T> buildFormUrlEncodedRequestBody(content: T): RequestBody {
+        return FormBody.Builder().apply {
+            @Suppress("UNCHECKED_CAST")
+            (content as Map<String, PartConfig<*>>).forEach { (name, part) ->
+                add(name, parameterToString(part.body))
+            }
+        }.build()
+    }
+
+    private inline fun <reified T> buildJsonRequestBody(content: T, mediaType: String?): RequestBody {
+        return if (content == null) {
+            EMPTY_REQUEST
+        } else {
+            Serializer.kotlinxSerializationJson.encodeToString(content)
+                .toRequestBody((mediaType ?: JsonMediaType).toMediaTypeOrNull())
+        }
+    }
+
     protected inline fun <reified T> requestBody(content: T, mediaType: String?): RequestBody =
         when {
             content is ByteArray -> content.toRequestBody(
                 (mediaType ?: guessContentTypeFromByteArray(content)).toMediaTypeOrNull()
             )
-
             content is File -> content.asRequestBody(
                 (mediaType ?: guessContentTypeFromFile(content)).toMediaTypeOrNull()
             )
-
-            mediaType == FormDataMediaType ->
-                MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .apply {
-                        // content's type *must* be Map<String, PartConfig<*>>
-                        @Suppress("UNCHECKED_CAST")
-                        (content as Map<String, PartConfig<*>>).forEach { (name, part) ->
-                            when (part.body) {
-                                is File -> addPartToMultiPart(name, part.headers, part.body)
-                                is List<*> -> {
-                                    part.body.forEach {
-                                        if (it is File) {
-                                            addPartToMultiPart(name, part.headers, it)
-                                        } else {
-                                            addPartToMultiPart(name, part.headers, it)
-                                        }
-                                    }
-                                }
-
-                                else -> addPartToMultiPart(name, part.headers, part.body)
-                            }
-                        }
-                    }.build()
-
-            mediaType == FormUrlEncMediaType -> {
-                FormBody.Builder().apply {
-                    // content's type *must* be Map<String, PartConfig<*>>
-                    @Suppress("UNCHECKED_CAST")
-                    (content as Map<String, PartConfig<*>>).forEach { (name, part) ->
-                        add(name, parameterToString(part.body))
-                    }
-                }.build()
-            }
-
+            mediaType == FormDataMediaType -> buildMultipartRequestBody(content)
+            mediaType == FormUrlEncMediaType -> buildFormUrlEncodedRequestBody(content)
             mediaType == null || mediaType.startsWith("application/") && mediaType.endsWith("json") ->
-                if (content == null) {
-                    EMPTY_REQUEST
-                } else {
-                    Serializer.kotlinxSerializationJson.encodeToString(content)
-                        .toRequestBody((mediaType ?: JsonMediaType).toMediaTypeOrNull())
-                }
-
+                buildJsonRequestBody(content, mediaType)
             mediaType == XmlMediaType -> throw UnsupportedOperationException("xml not currently supported.")
             mediaType == TextMediaType && content is String ->
                 content.toRequestBody(TextMediaType.toMediaTypeOrNull())
-            // TODO: this should be extended with other serializers
             else -> throw UnsupportedOperationException("requestBody currently only supports JSON body, text body, byte body and File body.")
         }
+
+    private fun handleFileResponse(response: Response): File {
+        val body = response.body ?: throw IOException("Response body is null")
+        val contentDisposition = response.header("Content-Disposition")
+        val fileName = contentDisposition?.let {
+            val pattern = Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?")
+            val matcher = pattern.matcher(it)
+            if (matcher.find()) matcher.group(1)?.replace(".*[/\\\\]", "")?.replace(";", "") else null
+        }
+
+        val (prefix, suffix) = if (fileName == null) {
+            "download" to ""
+        } else {
+            val pos = fileName.lastIndexOf(".")
+            if (pos == -1) {
+                fileName to null
+            } else {
+                fileName.substring(0, pos) to fileName.substring(pos)
+            }
+        }
+        val finalPrefix = if (prefix.length < 3) "download" else prefix
+
+        val tempFile = java.nio.file.Files.createTempFile(finalPrefix, suffix).toFile()
+        tempFile.deleteOnExit()
+        body.byteStream().use { inputStream ->
+            tempFile.outputStream().use { tempFileOutputStream ->
+                inputStream.copyTo(tempFileOutputStream)
+            }
+        }
+        return tempFile
+    }
 
     protected inline fun <reified T : Any?> responseBody(
         response: Response,
         mediaType: String? = JsonMediaType,
     ): T? {
-        val body = response.body
-        if (body == null) {
+        val body = response.body ?: return null
+
+        if (T::class.java == Unit::class.java) {
             return null
-        } else if (T::class.java == Unit::class.java) {
-            // No need to parse the body when we're not interested in the body
-            // Useful when API is returning other Content-Type
-            return null
-        } else if (T::class.java == File::class.java) {
-            // return tempFile
-            val contentDisposition = response.header("Content-Disposition")
-
-            val fileName = if (contentDisposition != null) {
-                // Get filename from the Content-Disposition header.
-                val pattern = Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?")
-                val matcher = pattern.matcher(contentDisposition)
-                if (matcher.find()) {
-                    matcher.group(1)
-                        ?.replace(".*[/\\\\]", "")
-                        ?.replace(";", "")
-                } else {
-                    null
-                }
-            } else {
-                null
-            }
-
-            var prefix: String?
-            val suffix: String?
-            if (fileName == null) {
-                prefix = "download"
-                suffix = ""
-            } else {
-                val pos = fileName.lastIndexOf(".")
-                if (pos == -1) {
-                    prefix = fileName
-                    suffix = null
-                } else {
-                    prefix = fileName.substring(0, pos)
-                    suffix = fileName.substring(pos)
-                }
-                // Files.createTempFile requires the prefix to be at least three characters long
-                if (prefix.length < 3) {
-                    prefix = "download"
-                }
-            }
-
-            // Attention: if you are developing an android app that supports API Level 25 and below, please check flag supportAndroidApiLevel25AndBelow in https://openapi-generator.tech/docs/generators/kotlin#config-options
-            val tempFile = java.nio.file.Files.createTempFile(prefix, suffix).toFile()
-            tempFile.deleteOnExit()
-            body.byteStream().use { inputStream ->
-                tempFile.outputStream().use { tempFileOutputStream ->
-                    inputStream.copyTo(tempFileOutputStream)
-                }
-            }
-            return tempFile as T
+        }
+        if (T::class.java == File::class.java) {
+            @Suppress("UNCHECKED_CAST")
+            return handleFileResponse(response) as? T
         }
 
         return when {
             mediaType == null || (mediaType.startsWith("application/") && mediaType.endsWith("json")) -> {
                 val bodyContent = body.string()
-                if (bodyContent.isEmpty()) {
-                    return null
-                }
-                Serializer.kotlinxSerializationJson.decodeFromString<T>(bodyContent)
+                if (bodyContent.isEmpty()) null else Serializer.kotlinxSerializationJson.decodeFromString<T>(bodyContent)
             }
-
             mediaType == OctetMediaType -> body.bytes() as? T
             mediaType == TextMediaType -> body.string() as? T
             else -> throw UnsupportedOperationException("responseBody currently only supports JSON body, text body and byte body.")
         }
     }
 
-
-    protected inline fun <reified I, reified T : Any?> request(requestConfig: RequestConfig<I>): ApiResponse<T?> {
-        val httpUrl =
-            baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
-
+    private fun <I> buildRequest(requestConfig: RequestConfig<I>, httpUrl: okhttp3.HttpUrl): Request {
         val url = httpUrl.newBuilder()
             .addEncodedPathSegments(requestConfig.path.trimStart('/'))
             .apply {
-                requestConfig.query.forEach { query ->
-                    query.value.forEach { queryValue ->
-                        addQueryParameter(query.key, queryValue)
-                    }
+                requestConfig.query.forEach { (key, value) ->
+                    value.forEach { queryValue -> addQueryParameter(key, queryValue) }
                 }
             }.build()
 
-        // take content-type/accept from spec or set to default (application/json) if not defined
-        if (requestConfig.body != null && requestConfig.headers[ContentType].isNullOrEmpty()) {
-            requestConfig.headers[ContentType] = JsonMediaType
+        val headers = requestConfig.headers.toMutableMap()
+        if (requestConfig.body != null && headers[ContentType].isNullOrEmpty()) {
+            headers[ContentType] = JsonMediaType
         }
-        if (requestConfig.headers[Accept].isNullOrEmpty()) {
-            requestConfig.headers[Accept] = JsonMediaType
-        }
-        val headers = requestConfig.headers
-
         if (headers[Accept].isNullOrEmpty()) {
-            throw kotlin.IllegalStateException("Missing Accept header. This is required.")
+            headers[Accept] = JsonMediaType
+        }
+        if (headers[Accept].isNullOrEmpty()) {
+            throw IllegalStateException("Missing Accept header. This is required.")
         }
 
-        val contentType = if (headers[ContentType] != null) {
-            // TODO: support multiple contentType options here.
-            (headers[ContentType] as String).substringBefore(";").lowercase(Locale.US)
-        } else {
-            null
+        val contentType = headers[ContentType]?.substringBefore(";")?.lowercase(Locale.US)
+
+        val requestBuilder = Request.Builder().url(url)
+        val body = requestConfig.body?.let { requestBody(it, contentType) }
+
+        when (requestConfig.method) {
+            RequestMethod.DELETE -> requestBuilder.delete(body)
+            RequestMethod.GET -> requestBuilder.get()
+            RequestMethod.HEAD -> requestBuilder.head()
+            RequestMethod.PATCH -> requestBuilder.patch(body ?: EMPTY_REQUEST)
+            RequestMethod.PUT -> requestBuilder.put(body ?: EMPTY_REQUEST)
+            RequestMethod.POST -> requestBuilder.post(body ?: EMPTY_REQUEST)
+            RequestMethod.OPTIONS -> requestBuilder.method("OPTIONS", null)
         }
 
-        val request = when (requestConfig.method) {
-            RequestMethod.DELETE -> Request.Builder().url(url)
-                .delete(requestBody(requestConfig.body, contentType))
+        val headersBuilder = Headers.Builder()
+        headers.forEach { (key, value) -> headersBuilder.add(key, value) }
+        requestBuilder.headers(headersBuilder.build())
 
-            RequestMethod.GET -> Request.Builder().url(url)
-            RequestMethod.HEAD -> Request.Builder().url(url).head()
-            RequestMethod.PATCH -> Request.Builder().url(url)
-                .patch(requestBody(requestConfig.body, contentType))
+        return requestBuilder.build()
+    }
 
-            RequestMethod.PUT -> Request.Builder().url(url)
-                .put(requestBody(requestConfig.body, contentType))
-
-            RequestMethod.POST -> Request.Builder().url(url)
-                .post(requestBody(requestConfig.body, contentType))
-
-            RequestMethod.OPTIONS -> Request.Builder().url(url).method("OPTIONS", null)
-        }.apply {
-            val headersBuilder = Builder()
-            headers.forEach { header ->
-                headersBuilder.add(header.key, header.value)
-            }
-            this.headers(headersBuilder.build())
-        }.build()
-
-        val response = client.newCall(request).execute()
-
+    private inline fun <reified T : Any?> handleResponse(response: Response): ApiResponse<T?> {
         val accept = response.header(ContentType)?.substringBefore(";")?.lowercase(Locale.US)
-
-        // TODO: handle specific mapping types. e.g. Map<int, Class<?>>
-        @Suppress("UNNECESSARY_SAFE_CALL")
         return response.use {
             when {
-                it.isRedirect -> Redirection(
-                    it.code,
-                    it.headers.toMultimap()
-                )
-
-                it.isInformational -> Informational(
-                    it.message,
-                    it.code,
-                    it.headers.toMultimap()
-                )
-
-                it.isSuccessful -> Success(
-                    responseBody(it, accept),
-                    it.code,
-                    it.headers.toMultimap()
-                )
-
-                it.isClientError -> ClientError(
-                    it.message,
-                    it.body?.string(),
-                    it.code,
-                    it.headers.toMultimap()
-                )
-
-                else -> ServerError(
-                    it.message,
-                    it.body?.string(),
-                    it.code,
-                    it.headers.toMultimap()
-                )
+                it.isRedirect -> Redirection(it.code, it.headers.toMultimap())
+                it.isInformational -> Informational(it.message, it.code, it.headers.toMultimap())
+                it.isSuccessful -> Success(responseBody<T>(it, accept), it.code, it.headers.toMultimap())
+                it.isClientError -> ClientError(it.message, it.body?.string(), it.code, it.headers.toMultimap())
+                else -> ServerError(it.message, it.body?.string(), it.code, it.headers.toMultimap())
             }
         }
+    }
+
+    protected inline fun <reified I, reified T : Any?> request(requestConfig: RequestConfig<I>): ApiResponse<T?> {
+        val httpUrl = baseUrl.toHttpUrlOrNull() ?: throw IllegalStateException("baseUrl is invalid.")
+        val request = buildRequest(requestConfig, httpUrl)
+        val response = client.newCall(request).execute()
+        return handleResponse(response)
     }
 
     protected fun parameterToString(value: Any?): String = when (value) {
