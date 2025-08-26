@@ -140,6 +140,7 @@ openApiGenerate {
      * @param packagePrefix Prefix used to form `packageName`, `apiPackage`, `modelPackage`, and `invokerPackage`.
      * @return The registered TaskProvider for the configured GenerateTask.
      */
+
 fun createApiTask(taskName: String, specFile: String, packagePrefix: String) =
     tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(taskName) {
         generatorName.set("kotlin")

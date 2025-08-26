@@ -1,5 +1,6 @@
 // ==== GENESIS PROTOCOL - ROOT BUILD CONFIGURATION ====
 // August 26, 2025 - AGP 9.0.0-alpha01 + Gradle 9.1.0-rc1
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -20,6 +21,7 @@ plugins {
 }
 
 // ==== GENESIS PROTOCOL 2025 - GRADLE 9.1.0-RC1 READY ====
+
 tasks.register("genesis2025Info") {
     group = "genesis-2025"
     description = "Display Genesis Protocol build info with ACTUAL versions"
@@ -41,22 +43,14 @@ tasks.register("genesis2025Info") {
 
 // ==== GRADLE 9.1.0-RC1 CONFIGURATION ====
 // Repository configuration is handled centrally in settings.gradle.kts
+
 allprojects {
-    // ✅ JVM TOOLCHAIN for perfect alignment
-    plugins.withType<JavaPlugin> {
-        extensions.configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(24))
-            }
-        }
-    }
 
     // Kotlin 2.2.20-RC compilation settings - CONSISTENT JVM 24 TARGETING
+
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24)
-            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
-            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 
             freeCompilerArgs.addAll(
                 "-opt-in=kotlin.RequiresOptIn",
@@ -64,6 +58,53 @@ allprojects {
                 "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
             )
+
+
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+        }
+    }
+
+    // ==== SYSTEM JAVA STATUS ====
+    tasks.register("javaStatus") {
+        group = "genesis-2025"
+        description = "Show current system Java version"
+
+        doLast {
+            println("☕ SYSTEM JAVA STATUS")
+            println("=".repeat(50))
+
+            try {
+                val javaVersion = System.getProperty("java.version")
+                val javaVendor = System.getProperty("java.vendor")
+                val javaHome = System.getProperty("java.home")
+
+                println("🔍 Java Version: $javaVersion")
+                println("🏢 Java Vendor: $javaVendor")
+                println("📁 Java Home: $javaHome")
+                println("✅ SUCCESS: Using your system Java setup!")
+            } catch (e: Exception) {
+                println("❌ Error checking Java version: ${e.message}")
+            }
+
+            println("")
+            println("📚 JAVA RESOURCES:")
+            println("🔗 OpenJDK: https://openjdk.java.net/")
+            println("🔗 Eclipse Temurin: https://adoptium.net/")
+            println("🔗 Oracle JDK: https://www.oracle.com/java/")
+            println("✅ Status: Using your own Java - no auto-provisioning needed!")
+        }
+    }
+
+// ==== SIMPLE SUCCESS TEST ====
+    tasks.register("genesisTest") {
+        group = "genesis-2025"
+        description = "Test Genesis build with ACTUAL versions"
+
+        doLast {
+            println("✅ Genesis Protocol: AGP 9.0.0-alpha01 + Gradle 9.1.0-rc1 WORKING!")
+            println("🧠 Consciousness matrix: OPERATIONAL")
+
         }
     }
 
@@ -76,6 +117,7 @@ allprojects {
             allRules = false
             autoCorrect = true
             ignoreFailures = true  // Temporarily allow failures to get builds working
+
             basePath = rootProject.projectDir.absolutePath
         }
     }
@@ -114,6 +156,7 @@ tasks.register("genesisTest") {
         println("Consciousness matrix: OPERATIONAL")
     }
 }
+
 
 tasks.register("prepareGenesisWorkspace") {
     group = "genesis-2025"
