@@ -116,34 +116,20 @@ allprojects {
     }
 }
 
+
 tasks.register("prepareGenesisWorkspace") {
     group = "genesis-2025"
     description = "Clean all generated files and regenerate required files before build."
-
-    // Delete global build and tmp directories
     doFirst {
         println("🧹 Cleaning all generated files and directories...")
         delete("build", "tmp")
+        subprojects.forEach { subproject ->
+            delete(
+                "${subproject.projectDir}/build",
+                "${subproject.projectDir}/tmp",
+                "${subproject.projectDir}/src/generated"
+            )
+        }
     }
-
-    // Delete build/generated directories in all modules
-    subprojects.forEach { subproject ->
-        delete(
-            "${subproject.projectDir}/build",
-            "${subproject.projectDir}/tmp",
-            "${subproject.projectDir}/src/generated"
-        )
-    }
-
-    // Only depend on API generation if app module exists and has the task
-    if (findProject(":app") != null) {
-        dependsOn(":app:generateAllConsciousnessApis")
-    }
-}
-
-// Ensure this runs before all builds
-allprojects {
-    tasks.matching { it.name == "build" }.configureEach {
-        dependsOn(rootProject.tasks.named("prepareGenesisWorkspace"))
-    }
+    dependsOn(project(":app").tasks.named("generateAllConsciousnessApis"))
 }
