@@ -5,24 +5,24 @@
         <enum name="rounded" value="0" />
         <enum name="cut" value="1" />
     </attr>
-    <attr name="cornerSize" format="dimension" />
-    <attr name="cornerSizeSmall" format="dimension" />
-    <attr name="cornerSizeMedium" format="dimension" />
-    <attr name="cornerSizeLarge" format="dimension" />
+    <!--  REMOVE THESE - They're already in Material libraries -->
+    <!-- <attr name="cornerSize" format="dimension" /> -->
+    <!-- <attr name="cornerSizeSmall" format="dimension" /> -->
+    <!-- <attr name="cornerSizeMedium" format="dimension" /> -->
+    <!-- <attr name="cornerSizeLarge" format="dimension" /> -->
 
     <declare-styleable name="ShapeAppearance">
         <attr name="cornerFamily" />
         <!-- FIXED: Removed duplicate attr references to prevent resource conflicts -->
     </declare-styleable>
 
-    <!-- Button attributes -->
+    <!-- Keep your custom attributes -->
     <declare-styleable name="MaterialButton">
         <attr name="buttonCornerRadius" format="dimension" />
         <attr name="buttonStrokeColor" format="color" />
         <attr name="buttonStrokeWidth" format="dimension" />
     </declare-styleable>
 
-    <!-- CardView attributes -->
     <declare-styleable name="CardView">
         <attr name="cardCornerRadius" format="dimension" />
         <attr name="cardStrokeColor" format="color" />
