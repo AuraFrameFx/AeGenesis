@@ -1,0 +1,31 @@
+/**
+ * Common Build Configuration for Genesis-Os Project
+ * Fixes JVM compatibility and standardizes build settings
+ */
+
+android {
+    compileSdk 34  // Use stable SDK version instead of 36
+    
+    defaultConfig {
+        minSdk 24  // More reasonable minimum
+        targetSdk 34
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17  // Fixed: Use VERSION_17 instead of VERSION_24
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"  // Fixed: Use "17" string instead of JavaVersion.VERSION_24
+    }
+    
+    buildToolsVersion "34.0.0"  // Use stable build tools
+    ndkVersion "26.1.10909125"  // Use stable NDK version
+    
+    packagingOptions {
+        resources {
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}", "/META-INF/DEPENDENCIES"]
+        }
+    }
+}
