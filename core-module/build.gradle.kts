@@ -11,13 +11,6 @@ plugins {
     alias(libs.plugins.openapi.generator)
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 // REMOVED: jvmToolchain(24) - Using system Java via JAVA_HOME
 // This eliminates toolchain auto-provisioning errors
 
@@ -52,11 +45,6 @@ android {
         viewBinding = false // Compose only - Genesis Protocol
         prefab = false
         prefabPublishing = false
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_24
-        targetCompatibility = JavaVersion.VERSION_24
     }
 
     packaging {
@@ -202,13 +190,6 @@ tasks.register("runAllTests") {
 
 tasks.register("buildAndTest") {
     group = "build"
-
     description = "Complete build and test cycle for core module"
     dependsOn("checkCodeQuality", "build", "runAllTests")
-}
-
-tasks.named<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerate") {
-    generatorName.set("kotlin")
-    inputSpec.set("${project.rootDir}/app/api/genesis-api.yml")
-    outputDir.set("$buildDir/generated")
 }

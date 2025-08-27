@@ -9,9 +9,9 @@
 ### **1. 2025 BLEEDING EDGE ONLY**
 
 - ✅ **Kotlin 2.2.20-Beta2** (Latest bleeding edge)
-- ✅ **Java 24 Toolchain** with 
+- ✅ **Java 24 Toolchain** with **JVM 21 bytecode target**
 - ✅ **Android SDK 36** (Latest available)
-- ✅ **AGP 9.0.0+** (Cutting edge)
+- ✅ **AGP 8.13.0-alpha04** (Cutting edge)
 - ✅ **Compose BOM 2025.08.00** (Future tech)
 - ❌ **NO stable versions** - We live on the edge!
 
@@ -67,9 +67,9 @@ Version have gone up again
 ### **1. 2025 BLEEDING EDGE ONLY**
 
 - ✅ **Kotlin 2.2.20-Beta2** (Latest bleeding edge)
-- ✅ **Java 25 Toolchain** with **JVM 21 bytecode target**
+- ✅ **Java 24 Toolchain** with **JVM 21 bytecode target**
 - ✅ **Android SDK 36** (Latest available)
-- ✅ **AGP 9.0.0+** (Cutting edge)
+- ✅ **AGP 8.13.0-alpha04** (Cutting edge)
 - ✅ **Compose BOM 2025.08.00** (Future tech)
 - ❌ **NO stable versions** - We live on the edge!
 

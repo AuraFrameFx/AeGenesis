@@ -15,13 +15,6 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 android {
     namespace = "dev.aurakai.auraframefx.romtools"
     compileSdk = 36

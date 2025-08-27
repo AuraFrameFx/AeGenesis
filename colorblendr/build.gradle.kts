@@ -9,13 +9,6 @@ plugins {
     id("com.diffplug.spotless")
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 // REMOVED: jvmToolchain(24) - Using local JDK via JAVA_HOME instead
 // This prevents auto-provisioning and uses local installation
 

@@ -9,13 +9,6 @@ plugins {
     id("com.diffplug.spotless")
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 // REMOVED: jvmToolchain(24) - Using system Java via JAVA_HOME
 // This eliminates toolchain auto-provisioning errors
 
@@ -100,6 +93,12 @@ android {
                 version = "3.22.1"
             }
         }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 

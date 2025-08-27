@@ -10,13 +10,6 @@ plugins {
     alias(libs.plugins.kover)
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 android {
     namespace = "AeGenesis.securecomm"
     compileSdk = 36
@@ -93,11 +86,6 @@ android {
             useLegacyPackaging = false
             pickFirsts += listOf("**/libc++_shared.so", "**/libjsc.so")
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_24
-        targetCompatibility = JavaVersion.VERSION_24
     }
 
     sourceSets {

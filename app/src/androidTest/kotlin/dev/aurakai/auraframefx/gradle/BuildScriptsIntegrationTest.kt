@@ -727,12 +727,12 @@ class BuildScriptsIntegrationTest {
                 }
                 
                 java {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
+                    sourceCompatibility = JavaVersion.VERSION_24
+                    targetCompatibility = JavaVersion.VERSION_24
                 }
                 
                 kotlin {
-                    jvmToolchain(17)
+                    jvmToolchain(24)
                 }
             """.trimIndent()
             
@@ -742,9 +742,9 @@ class BuildScriptsIntegrationTest {
             val javaConfig = extractJavaConfiguration(buildScriptFile)
             
             // Then
-            assertEquals(17, javaConfig.sourceCompatibility)
-            assertEquals(17, javaConfig.targetCompatibility)
-            assertEquals(17, javaConfig.toolchainVersion)
+            assertEquals(24, javaConfig.sourceCompatibility)
+            assertEquals(24, javaConfig.targetCompatibility)
+            assertEquals(24, javaConfig.toolchainVersion)
         }
 
         @Test
@@ -928,7 +928,7 @@ class BuildScriptsIntegrationTest {
     
     private fun extractJavaConfiguration(file: File): JavaConfiguration {
         // Mock implementation
-        return JavaConfiguration(17, 17, 17)
+        return JavaConfiguration(24, 24, 24)
     }
     
     private fun extractTestConfiguration(file: File): TestConfiguration {
