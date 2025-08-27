@@ -12,7 +12,7 @@ plugins {
 
 // AUTO-EVERYTHING: Kotlin toolchain from TOML - Overridden for now
 kotlin {
-    jvmToolchain(25) // CORRECTED TO 25
+    jvmToolchain(24) // Set to 24 for consistency
 }
 
 dependencies {
