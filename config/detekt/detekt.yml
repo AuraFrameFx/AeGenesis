@@ -1,7 +1,6 @@
 # Minimal detekt configuration for Genesis Protocol
 build:
   maxIssues: 100
-  jvmTarget: "22"
 
 # Remove all style configurations that might cause syntax errors
 # This allows Compose @Composable functions to pass

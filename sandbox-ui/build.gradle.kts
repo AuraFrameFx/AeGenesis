@@ -9,6 +9,13 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
+// Added to specify Java version for this subproject
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
+    }
+}
+
 android {
     namespace = "AeGenesis.sandboxui"
     compileSdk = 36

@@ -9,6 +9,13 @@ plugins {
     id("com.diffplug.spotless")
 }
 
+// Added to specify Java version for this subproject
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
+    }
+}
+
 android {
     namespace = "dev.aurakai.auraframefx.oracledriveintegration"
     compileSdk = 36

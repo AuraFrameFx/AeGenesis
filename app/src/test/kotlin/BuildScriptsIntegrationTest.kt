@@ -18,7 +18,6 @@ import org.mockito.Mockito.*
 import org.mockito.kotlin.*
 import java.io.File
 import java.io.FileNotFoundException
-import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.concurrent.TimeoutException
 import java.util.stream.Stream
@@ -63,7 +62,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val validBuildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                     application
                 }
                 
@@ -94,7 +93,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val invalidBuildScript = """
                 plugins {
-                    kotlin("jvm" version "1.9.24"  // Missing closing parenthesis
+                    kotlin("jvm" version "1.9.20"  // Missing closing parenthesis
                 }
             """.trimIndent()
 
@@ -122,7 +121,7 @@ class BuildScriptsIntegrationTest {
             val groovyBuildScript = File(testProjectDir, "build.gradle")
             val validGroovyScript = """
                 plugins {
-                    id 'org.jetbrains.kotlin.jvm' version '1.9.24'
+                    id 'org.jetbrains.kotlin.jvm' version '1.9.20'
                     id 'application'
                 }
                 
@@ -153,7 +152,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 repositories {
@@ -184,7 +183,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 tasks.register("failingTask") {
@@ -211,7 +210,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 tasks.register("longRunningTask") {
@@ -235,7 +234,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 tasks.register("task1") {
@@ -270,7 +269,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                     id("org.springframework.boot") version "3.1.5"
                     application
                     id("io.spring.dependency-management") version "1.1.3"
@@ -284,7 +283,7 @@ class BuildScriptsIntegrationTest {
 
             // Then
             assertEquals(4, plugins.size)
-            assertTrue(plugins.any { it.id.contains("kotlin") && it.version == "1.9.24" })
+            assertTrue(plugins.any { it.id.contains("kotlin") && it.version == "1.9.20" })
             assertTrue(plugins.any { it.id == "org.springframework.boot" && it.version == "3.1.5" })
             assertTrue(plugins.any { it.id == "application" && it.version == null })
             assertTrue(plugins.any { it.id == "io.spring.dependency-management" && it.version == "1.1.3" })
@@ -296,7 +295,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 dependencies {
-                    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+                    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.20")
                     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
                     runtimeOnly("org.postgresql:postgresql:42.6.0")
                     compileOnly("org.projectlombok:lombok:1.18.30")
@@ -389,11 +388,11 @@ class BuildScriptsIntegrationTest {
             buildScriptFile.writeText(oldBuildScript)
 
             // When
-            upgradeKotlinVersion(buildScriptFile, "1.9.24")
+            upgradeKotlinVersion(buildScriptFile, "1.9.20")
 
             // Then
             val updatedContent = buildScriptFile.readText()
-            assertTrue(updatedContent.contains("kotlin(\"jvm\") version \"1.9.24\""))
+            assertTrue(updatedContent.contains("kotlin(\"jvm\") version \"1.9.20\""))
             assertFalse(updatedContent.contains("1.8.0"))
         }
 
@@ -583,7 +582,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
             """.trimIndent()
 
@@ -611,7 +610,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val inefficientBuildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 repositories {
@@ -658,7 +657,7 @@ class BuildScriptsIntegrationTest {
         @DisplayName("Should handle build scripts with unusual encoding")
         fun shouldHandleBuildScriptsWithUnusualEncoding() {
             // Given
-            val buildScript = "plugins { kotlin(\"jvm\") version \"1.9.24\" }"
+            val buildScript = "plugins { kotlin(\"jvm\") version \"1.9.20\" }"
             buildScriptFile.writeBytes(buildScript.toByteArray(Charsets.UTF_16))
 
             // When
@@ -674,7 +673,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 tasks.register("test-with-üñíçødé") {
@@ -730,16 +729,16 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 java {
-                    sourceCompatibility = JavaVersion.VERSION_24
-                    targetCompatibility = JavaVersion.VERSION_24
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
                 }
                 
                 kotlin {
-                    jvmToolchain(24)
+                    jvmToolchain(17)
                 }
             """.trimIndent()
 
@@ -749,9 +748,9 @@ class BuildScriptsIntegrationTest {
             val javaConfig = extractJavaConfiguration(buildScriptFile)
 
             // Then
-            assertEquals(24, javaConfig.sourceCompatibility)
-            assertEquals(24, javaConfig.targetCompatibility)
-            assertEquals(24, javaConfig.toolchainVersion)
+            assertEquals(17, javaConfig.sourceCompatibility)
+            assertEquals(17, javaConfig.targetCompatibility)
+            assertEquals(17, javaConfig.toolchainVersion)
         }
 
         @Test
@@ -760,7 +759,7 @@ class BuildScriptsIntegrationTest {
             // Given
             val buildScript = """
                 plugins {
-                    kotlin("jvm") version "1.9.24"
+                    kotlin("jvm") version "1.9.20"
                 }
                 
                 tasks.test {
@@ -809,7 +808,7 @@ class BuildScriptsIntegrationTest {
     private fun extractPluginsFromBuildScript(file: File): List<Plugin> {
         // Mock implementation - would parse and extract plugin information
         return listOf(
-            Plugin("kotlin", "1.9.24"),
+            Plugin("kotlin", "1.9.20"),
             Plugin("org.springframework.boot", "3.1.5"),
             Plugin("application", null),
             Plugin("io.spring.dependency-management", "1.1.3")
@@ -819,7 +818,7 @@ class BuildScriptsIntegrationTest {
     private fun extractDependenciesFromBuildScript(file: File): List<Dependency> {
         // Mock implementation - would parse and extract dependency information
         return listOf(
-            Dependency("implementation", "org.jetbrains.kotlin", "kotlin-stdlib", "1.9.24"),
+            Dependency("implementation", "org.jetbrains.kotlin", "kotlin-stdlib", "1.9.20"),
             Dependency("testImplementation", "org.junit.jupiter", "junit-jupiter", "5.9.2"),
             Dependency("runtimeOnly", "org.postgresql", "postgresql", "42.6.0"),
             Dependency("compileOnly", "org.projectlombok", "lombok", "1.18.30"),
@@ -909,7 +908,7 @@ class BuildScriptsIntegrationTest {
         val dependencies =
             (1..dependencyCount).map { "    implementation(\"com.example:library$it:1.0.0\")" }
         return """
-            plugins { kotlin("jvm") version "1.9.24" }
+            plugins { kotlin("jvm") version "1.9.20" }
             dependencies {
             ${dependencies.joinToString("\n")}
             }
@@ -948,7 +947,7 @@ class BuildScriptsIntegrationTest {
 
     private fun extractJavaConfiguration(file: File): JavaConfiguration {
         // Mock implementation
-        return JavaConfiguration(24, 24, 24)
+        return JavaConfiguration(17, 17, 17)
     }
 
     private fun extractTestConfiguration(file: File): TestConfiguration {

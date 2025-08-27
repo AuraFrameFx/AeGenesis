@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 corner size attributes -->
-    <attr name="cornerFamily" format="enum">
-        <enum name="rounded" value="0" />
-        <enum name="cut" value="1" />
-    </attr>
-    <!--  REMOVE THESE - They're already in Material libraries -->
-    <!-- <attr name="cornerSize" format="dimension" /> -->
-    <!-- <attr name="cornerSizeSmall" format="dimension" /> -->
-    <!-- <attr name="cornerSizeMedium" format="dimension" /> -->
-    <!-- <attr name="cornerSizeLarge" format="dimension" /> -->
+    <!-- Custom corner size attributes to avoid Material conflicts -->
+    <attr name="customCornerSize" format="dimension" />
+    <attr name="customCornerSizeSmall" format="dimension" />
+    <attr name="customCornerSizeMedium" format="dimension" />
+    <attr name="customCornerSizeLarge" format="dimension" />
 
-    <declare-styleable name="ShapeAppearance">
-        <attr name="cornerFamily" />
-        <!-- FIXED: Removed duplicate attr references to prevent resource conflicts -->
-    </declare-styleable>
-
-    <!-- Keep your custom attributes -->
+    <!-- Button attributes -->
     <declare-styleable name="MaterialButton">
         <attr name="buttonCornerRadius" format="dimension" />
         <attr name="buttonStrokeColor" format="color" />
         <attr name="buttonStrokeWidth" format="dimension" />
     </declare-styleable>
 
+    <!-- CardView attributes -->
     <declare-styleable name="CardView">
         <attr name="cardCornerRadius" format="dimension" />
         <attr name="cardStrokeColor" format="color" />
