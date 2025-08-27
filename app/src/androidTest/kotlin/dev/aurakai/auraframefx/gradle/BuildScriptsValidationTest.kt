@@ -3,6 +3,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.After
 import io.mockk.*
+import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.util.Properties
 

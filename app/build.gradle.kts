@@ -10,13 +10,6 @@ plugins {
     id("org.openapi.generator") version "7.14.0"
 }
 
-// Added to specify Java version for this subproject
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
-    }
-}
-
 // REMOVED: jvmToolchain(24) - Using system Java via JAVA_HOME
 // This eliminates toolchain auto-provisioning errors
 
@@ -65,6 +58,23 @@ android {
                 // REMOVE conflicting abiFilters - use main ndk section instead
             }
         }
+    }
+
+    // ✅ ADD THIS - MISSING JVM CONFIGURATION
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
+        isCoreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        jvmTarget = "24"
+
+        freeCompilerArgs += listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
     }
 
     externalNativeBuild {
@@ -120,11 +130,7 @@ android {
         viewBinding = false  // Genesis Protocol - Compose only
     }
 
-    // REMOVED: compileOptions - AGP 8.13.0-rc01 auto-detects from version catalog!
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_24
-        targetCompatibility = JavaVersion.VERSION_24
-    }
+    // REMOVED: composeOptions - AGP 8.13.0-rc01 auto-detects from version catalog!
 
     // Windows path fix: Disable resource processing features that cause path issues
     androidResources {
@@ -133,7 +139,7 @@ android {
         //     "--no-crunch",
         //     "--no-version-vectors"
         // )
-        // ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
     }
 
 
@@ -143,6 +149,12 @@ android {
                 layout.buildDirectory.dir("generated/source/openapi/src/main/kotlin")
             )
         }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 
@@ -377,7 +389,8 @@ tasks.named("preBuild") {
     }
 
 dependencies {
-    implementation(platform(libs.androidx.compose.bom))
+    {
+implementation(platform(libs.androidx.compose.bom))
 
 implementation(libs.androidx.appcompat)
 implementation(libs.androidx.core.ktx)
@@ -398,10 +411,10 @@ implementation(libs.room.runtime)
 implementation(libs.room.ktx)
 ksp(libs.room.compiler)
 
+coreLibraryDesugaring(libs.coreLibraryDesugaring)
+
 implementation(libs.timber)
 implementation(libs.coil.compose)
-
-coreLibraryDesugaring(libs.coreLibraryDesugaring)
 
 implementation(platform(libs.firebase.bom))
 implementation(libs.bundles.firebase)

@@ -20,14 +20,8 @@ class MockVertexAIClient
 class MockContextManager
 class MockSecurityContext
 class MockAuraFxLogger {
-    fun info(tag: String, message: String) {
-        // Mock implementation - no actual logging needed
-        println("[INFO] $tag: $message")
-    }
-    fun error(tag: String, message: String, e: Throwable? = null) {
-        // Mock implementation - no actual logging needed  
-        println("[ERROR] $tag: $message ${e?.message ?: ""}")
-    }
+    fun info(tag: String, message: String) {}
+    fun error(tag: String, message: String, e: Throwable? = null) {}
 }
 
 // Mock service implementations
