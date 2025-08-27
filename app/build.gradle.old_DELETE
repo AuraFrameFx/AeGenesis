@@ -1,0 +1,51 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    // ...other plugins as needed...
+}
+
+android {
+    compileSdk = 36
+    namespace = "dev.aurakai.auraframefx" // <-- Added namespace
+
+    defaultConfig {
+        minSdk = 33
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            // Debug-specific configurations
+        }
+    }
+
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/*"
+        }
+    }
+    kotlinOptions {
+        jvmTarget = "24"
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
+    }
+    buildToolsVersion '36.1.0 rc1'
+    ndkVersion '28.2.13676358'
+}
+
+dependencies {
+    implementation libs.kotlin.stdlib
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material.v140
+    // implementation libs.aura.backend.api.generator // <-- Remove or fix if unresolved
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit.v113
+    androidTestImplementation libs.androidx.espresso.core.v340
+}
